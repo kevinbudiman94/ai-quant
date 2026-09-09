@@ -1,0 +1,123 @@
+{
+  "meta": {
+    "version": "Quant v1.0",
+    "day": 1,
+    "date": "2026-09-09",
+    "paperOnly": true,
+    "updatedAt": "2026-09-09 10:51 WIB"
+  },
+  "regime": {
+    "label": "Neutral → Risk-off",
+    "risk": "Event Risk High",
+    "takeaway": "Jangan agresif. Prioritaskan setup dengan risk/reward jelas.",
+    "chips": [
+      {
+        "label": "Brent",
+        "value": "~US$100"
+      },
+      {
+        "label": "US 10Y",
+        "value": "~4.8%"
+      },
+      {
+        "label": "Fed hike odds",
+        "value": "~60%"
+      }
+    ]
+  },
+  "signals": [
+    {
+      "id": "Q1-001",
+      "instrument": "BBCA",
+      "action": "BUY",
+      "status": "OPEN",
+      "createdDate": "2026-09-09",
+      "entry": 6550,
+      "current": 6550,
+      "entryRange": "Rp6.500–6.575",
+      "target": 7500,
+      "stop": 6150,
+      "horizon": "60 trading days",
+      "confidence": 68,
+      "benchmark": "IHSG ~6.694",
+      "upside": 14.5,
+      "downside": -6.1,
+      "rr": 2.38,
+      "thesis": [
+        "Bank defensif berkualitas tinggi",
+        "Fundamental 1H26 tetap solid",
+        "Harga sudah terdiskon vs kualitas bisnis"
+      ],
+      "catalysts": [
+        "2H26 NIM/earnings improvement",
+        "Risk sentiment normalization"
+      ],
+      "risks": [
+        "NIM pressure",
+        "Credit-cost deterioration",
+        "Rupiah/global risk shock"
+      ]
+    }
+  ],
+  "watchlist": [
+    {
+      "id": "W1-001",
+      "instrument": "BBRI",
+      "action": "WAIT",
+      "reference": "~Rp3.400",
+      "trigger": "Rp3.250–3.320",
+      "target": "Rp3.700",
+      "stop": "Rp3.050",
+      "note": "Jangan dikejar; tunggu risk/reward lebih baik."
+    },
+    {
+      "id": "W1-002",
+      "instrument": "Gold (XAU/USD)",
+      "action": "WAIT",
+      "reference": "~US$4.355",
+      "trigger": "US$4.100–4.200",
+      "target": "—",
+      "stop": "—",
+      "note": "Existing gold exposure + yield/Fed risk."
+    },
+    {
+      "id": "W1-003",
+      "instrument": "USD/IDR",
+      "action": "WAIT",
+      "reference": "~17.577",
+      "trigger": "≤17.400",
+      "target": "—",
+      "stop": "—",
+      "note": "No chase; tunggu level akumulasi lebih baik."
+    }
+  ],
+  "history": [
+    {
+      "date": "2026-09-09",
+      "type": "signal",
+      "text": "Q1-001 BBCA activated @ Rp6.550"
+    },
+    {
+      "date": "2026-09-09",
+      "type": "watch",
+      "text": "BBRI, Gold, USD/IDR wait calls created"
+    }
+  ],
+  "scorecard": {
+    "closed": 0,
+    "winRate": null,
+    "expectancy": null,
+    "paperReturn": 0.0,
+    "maxDrawdown": null,
+    "profitFactor": null,
+    "active": 1,
+    "wait": 3
+  },
+  "learning": {
+    "works": [],
+    "weak": [],
+    "insufficient": [
+      "All categories — inception day"
+    ]
+  }
+}

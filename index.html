@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>AI Quant Paper Portfolio</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div><div id="meta" class="eyebrow"></div><h1>AI Quant Paper Portfolio</h1><div id="updated" class="eyebrow" style="margin-top:6px"></div></div>
+    <div class="badge amber">PAPER ONLY</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-nav="today">Today</button>
+    <button class="tab" data-nav="open">Open</button>
+    <button class="tab" data-nav="watch">Watchlist</button>
+    <button class="tab" data-nav="history">History</button>
+    <button class="tab" data-nav="score">Scorecard</button>
+    <button class="tab" data-nav="audit">Audit</button>
+    <button class="tab" data-nav="settings">Settings</button>
+  </div>
+
+  <section class="panel active" data-panel="today">
+    <div class="card">
+      <div class="row wrap"><div><div class="label">MARKET REGIME</div><div id="regime" class="medium"></div></div><span id="risk" class="badge red"></span></div>
+      <div id="macrochips" class="kpi-grid" style="margin-top:12px"></div>
+      <div id="takeaway" class="small muted" style="margin-top:12px"></div>
+    </div>
+    <div id="hero"></div>
+  </section>
+
+  <section class="panel" data-panel="open">
+    <div class="card">
+      <div class="medium">Open Signals</div>
+      <div class="table-wrap" style="margin-top:10px"><table><thead><tr><th>ID</th><th>Asset</th><th>Entry</th><th>Current</th><th>P/L</th><th>Target</th><th>Stop</th></tr></thead><tbody id="openRows"></tbody></table></div>
+    </div>
+  </section>
+
+  <section class="panel" data-panel="watch">
+    <div id="watchcards"></div>
+  </section>
+
+  <section class="panel" data-panel="history">
+    <div class="card"><div class="medium">Signal History</div><div id="historyList" class="timeline" style="margin-top:14px"></div></div>
+  </section>
+
+  <section class="panel" data-panel="score">
+    <div class="card"><div class="medium">System Scorecard</div><div id="scoregrid" class="kpi-grid" style="margin-top:14px"></div><div class="empty" style="margin-top:14px">Sample size masih terlalu kecil untuk kesimpulan statistik.</div></div>
+  </section>
+
+  <section class="panel" data-panel="audit"><div id="audit"></div></section>
+
+  <section class="panel settings" data-panel="settings">
+    <div class="card">
+      <div class="medium">Data & Sync</div>
+      <div class="small muted" style="margin-top:6px">Day-1 data sudah dibundel. Nanti app yang sama bisa diarahkan ke satu public JSON feed untuk update otomatis.</div>
+      <hr>
+      <label class="label" for="syncUrl">PUBLIC JSON FEED URL (OPTIONAL)</label>
+      <input id="syncUrl" inputmode="url" placeholder="https://.../data.json">
+      <div class="actions"><button id="syncBtn" class="btn primary">Sync now</button></div>
+      <hr>
+      <div class="label">MANUAL BACKUP / IMPORT</div>
+      <input id="importFile" type="file" accept="application/json,.json" style="margin-top:7px">
+      <div class="actions"><button id="resetData" class="btn">Reset to Day 1</button></div>
+      <div id="settingsStatus" class="status"></div>
+    </div>
+    <div class="card">
+      <div class="medium">Installation</div>
+      <ol class="small">
+        <li>Host folder ini di HTTPS (GitHub Pages / Netlify / Cloudflare Pages).</li>
+        <li>Buka URL di Chrome Android.</li>
+        <li>Pilih menu ⋮ → Add to Home screen / Install app.</li>
+        <li>Setelah terpasang, app bisa dibuka dari icon seperti aplikasi biasa.</li>
+      </ol>
+    </div>
+  </section>
+</div>
+
+<div class="bottomnav">
+  <button class="active" data-nav="today">Today</button>
+  <button data-nav="open">Open</button>
+  <button data-nav="watch">Watch</button>
+  <button data-nav="score">Score</button>
+</div>
+
+<script>window.__FALLBACK_DATA__ = {"meta": {"version": "Quant v1.0", "day": 1, "date": "2026-09-09", "paperOnly": true, "updatedAt": "2026-09-09 10:51 WIB"}, "regime": {"label": "Neutral → Risk-off", "risk": "Event Risk High", "takeaway": "Jangan agresif. Prioritaskan setup dengan risk/reward jelas.", "chips": [{"label": "Brent", "value": "~US$100"}, {"label": "US 10Y", "value": "~4.8%"}, {"label": "Fed hike odds", "value": "~60%"}]}, "signals": [{"id": "Q1-001", "instrument": "BBCA", "action": "BUY", "status": "OPEN", "createdDate": "2026-09-09", "entry": 6550, "current": 6550, "entryRange": "Rp6.500–6.575", "target": 7500, "stop": 6150, "horizon": "60 trading days", "confidence": 68, "benchmark": "IHSG ~6.694", "upside": 14.5, "downside": -6.1, "rr": 2.38, "thesis": ["Bank defensif berkualitas tinggi", "Fundamental 1H26 tetap solid", "Harga sudah terdiskon vs kualitas bisnis"], "catalysts": ["2H26 NIM/earnings improvement", "Risk sentiment normalization"], "risks": ["NIM pressure", "Credit-cost deterioration", "Rupiah/global risk shock"]}], "watchlist": [{"id": "W1-001", "instrument": "BBRI", "action": "WAIT", "reference": "~Rp3.400", "trigger": "Rp3.250–3.320", "target": "Rp3.700", "stop": "Rp3.050", "note": "Jangan dikejar; tunggu risk/reward lebih baik."}, {"id": "W1-002", "instrument": "Gold (XAU/USD)", "action": "WAIT", "reference": "~US$4.355", "trigger": "US$4.100–4.200", "target": "—", "stop": "—", "note": "Existing gold exposure + yield/Fed risk."}, {"id": "W1-003", "instrument": "USD/IDR", "action": "WAIT", "reference": "~17.577", "trigger": "≤17.400", "target": "—", "stop": "—", "note": "No chase; tunggu level akumulasi lebih baik."}], "history": [{"date": "2026-09-09", "type": "signal", "text": "Q1-001 BBCA activated @ Rp6.550"}, {"date": "2026-09-09", "type": "watch", "text": "BBRI, Gold, USD/IDR wait calls created"}], "scorecard": {"closed": 0, "winRate": null, "expectancy": null, "paperReturn": 0.0, "maxDrawdown": null, "profitFactor": null, "active": 1, "wait": 3}, "learning": {"works": [], "weak": [], "insufficient": ["All categories — inception day"]}};
+</script>
+<script src="app.js"></script>
+<script>
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));}
+</script>
+</body>
+</html>
