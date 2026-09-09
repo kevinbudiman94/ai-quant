@@ -1,136 +1,28 @@
 
-const FALLBACK = window.__FALLBACK_DATA__;
-let state = null;
-
-function money(v){ return typeof v==="number" ? "Rp"+v.toLocaleString("id-ID") : v; }
-function pct(v){ if(v===null||v===undefined) return "N/A"; return (v>0?"+":"")+Number(v).toFixed(2)+"%"; }
-function esc(s){ return String(s ?? "").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])); }
-
-async function loadData(){
-  const saved = localStorage.getItem("quantData");
-  if(saved){ try{ return JSON.parse(saved); }catch(e){} }
-  try{
-    const r = await fetch("./data.json",{cache:"no-store"});
-    if(r.ok) return await r.json();
-  }catch(e){}
-  return FALLBACK;
-}
-
-function saveData(d){ localStorage.setItem("quantData", JSON.stringify(d)); }
-
+const FALLBACK=window.__FALLBACK_DATA__,KTX='quantPrivateTransactionsV2',KPRICE='quantPrivatePricesV2',KFEED='quantFeedUrlV2',KMARKET='quantMarketCacheV2';let market=FALLBACK,txs=[],manualPrices={};
+const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])),num=x=>Number.isFinite(Number(x))?Number(x):null,money=x=>num(x)===null?'—':'Rp'+Math.round(Number(x)).toLocaleString('id-ID'),pct=x=>num(x)===null?'N/A':(Number(x)>0?'+':'')+Number(x).toFixed(2)+'%';
+function parseCSV(t){let R=[],r=[],c='',q=false;for(let i=0;i<t.length;i++){let x=t[i],n=t[i+1];if(x=='"'){if(q&&n=='"'){c+='"';i++}else q=!q}else if(x==','&&!q){r.push(c);c=''}else if((x=='\n'||x=='\r')&&!q){if(x=='\r'&&n=='\n')i++;r.push(c);c='';if(r.some(v=>v!==''))R.push(r);r=[]}else c+=x}if(c!==''||r.length){r.push(c);R.push(r)}return R}
+function conv(v,t){if(t==='number'){let n=Number(v);return Number.isFinite(n)?n:v}return v}
+function applyFeed(csv){let rows=parseCSV(csv),h=rows[0]||[],ix=k=>h.indexOf(k),d=JSON.parse(JSON.stringify(FALLBACK));if(['record_type','record_id','field','value','value_type','as_of_date'].some(k=>ix(k)<0))throw Error('Wrong feed');let L={};rows.slice(1).forEach(r=>{let type=r[ix('record_type')]||'',id=r[ix('record_id')]||'',field=r[ix('field')]||'',date=r[ix('as_of_date')]||'',key=type+'|'+id+'|'+field;if(field&&(!L[key]||date>=L[key].date))L[key]={type,id,field,date,value:conv(r[ix('value')],r[ix('value_type')])}});Object.values(L).forEach(o=>{if(o.type==='meta')d.meta[o.field]=o.value;else if(o.type==='regime'){if(['label','risk','takeaway'].includes(o.field))d.regime[o.field]=o.value;let m={brent:'Brent',us10y:'US 10Y',fedOdds:'Fed hike odds'};if(m[o.field]){let c=d.regime.chips.find(x=>x.label===m[o.field]);if(c)c.value=o.value}}else if(o.type==='signal'){let s=d.signals.find(x=>x.id===o.id);if(!s){s={id:o.id};d.signals.push(s)}s[o.field]=o.field==='thesis'?String(o.value).split('|'):o.value}else if(o.type==='watch'&&o.field==='summary'){let a=String(o.value).split('|'),w=d.watchlist.find(x=>x.id===o.id),nw={id:o.id,instrument:a[0]||o.id,action:'WAIT',reference:a[1]||'—',trigger:a[2]||'—',note:a[5]||''};w?Object.assign(w,nw):d.watchlist.push(nw)}else if(o.type==='score')d.scorecard[o.field]=o.value;else if(o.type==='history'&&o.field==='summary')d.history.push({date:o.date,text:String(o.value)})});return d}
+function setSync(t,c=''){$('syncText').textContent=t;$('syncDot').className='dot'+(c?' '+c:'')}
+async function sync(){let u=localStorage.getItem(KFEED);if(!u){setSync('No feed URL yet');return}try{setSync('Syncing…');let r=await fetch(u,{cache:'no-store'});if(!r.ok)throw Error();market=applyFeed(await r.text());localStorage.setItem(KMARKET,JSON.stringify(market));render();setSync('Latest data synced','ok')}catch(e){setSync('Using cached data · sync failed','err')}}
+function load(){try{txs=JSON.parse(localStorage.getItem(KTX)||'[]')}catch{}try{manualPrices=JSON.parse(localStorage.getItem(KPRICE)||'{}')}catch{}try{let c=JSON.parse(localStorage.getItem(KMARKET)||'null');if(c)market=c}catch{}}
+function save(){localStorage.setItem(KTX,JSON.stringify(txs));localStorage.setItem(KPRICE,JSON.stringify(manualPrices))}
+const nq=t=>(Number(t.quantity)||0)*(t.unit==='lot'?100:1);
+function mprice(i){let k=i.toUpperCase();if(num(manualPrices[k])!==null)return Number(manualPrices[k]);let s=(market.signals||[]).find(x=>String(x.instrument).toUpperCase()===k);return s&&num(s.current)!==null?Number(s.current):null}
+function positions(){let B={};[...txs].sort((a,b)=>(a.date+a.createdAt).localeCompare(b.date+b.createdAt)).forEach(t=>{let k=t.instrument.toUpperCase(),p=B[k]||(B[k]={instrument:k,qty:0,avg:0,realized:0,sources:new Set(),links:new Set()}),q=nq(t),pr=Number(t.price)||0,f=Number(t.fee)||0;p.sources.add(t.source);if(t.linkedSignal)p.links.add(t.linkedSignal);if(t.action==='BUY'){let cost=p.qty*p.avg+q*pr+f;p.qty+=q;p.avg=p.qty?cost/p.qty:0}else{let z=Math.min(q,p.qty);p.realized+=(pr-p.avg)*z-f;p.qty-=z;if(p.qty<=0){p.qty=0;p.avg=0}}});return Object.values(B).filter(p=>p.qty>0||Math.abs(p.realized)>0.01).map(p=>{let c=mprice(p.instrument);return {...p,current:c,unreal:c===null?null:(c-p.avg)*p.qty,unrealPct:c===null||!p.avg?null:(c/p.avg-1)*100,sources:[...p.sources],links:[...p.links]}})}
+function sigFor(p){return (market.signals||[]).find(s=>p.links.includes(s.id))||(market.signals||[]).find(s=>String(s.instrument).toUpperCase()===p.instrument)}
 function render(){
-  const d=state, sig=d.signals[0], sc=d.scorecard;
-  document.getElementById("meta").textContent=`${d.meta.version} · Day ${d.meta.day} · ${d.meta.date}`;
-  document.getElementById("updated").textContent=`Updated: ${d.meta.updatedAt}`;
-  document.getElementById("regime").textContent=d.regime.label;
-  document.getElementById("risk").textContent=d.regime.risk;
-  document.getElementById("takeaway").textContent=d.regime.takeaway;
-  document.getElementById("macrochips").innerHTML=d.regime.chips.map(x=>`<div class="kpi"><div class="label">${esc(x.label)}</div><div class="medium">${esc(x.value)}</div></div>`).join("");
-
-  document.getElementById("hero").innerHTML=`
-    <div class="card signal">
-      <div class="row wrap">
-        <div>
-          <div class="label">TODAY'S BEST SETUP</div>
-          <div class="row" style="justify-content:flex-start;margin-top:4px">
-            <div class="big">${esc(sig.instrument)}</div>
-            <div class="badge green">${esc(sig.action)}</div>
-          </div>
-          <div class="muted small" style="margin-top:5px">${esc(sig.benchmark)}</div>
-        </div>
-        <div style="text-align:right"><div class="label">REFERENCE ENTRY</div><div class="big">${money(sig.entry)}</div></div>
-      </div>
-      <div class="kpi-grid" style="margin-top:14px">
-        <div class="kpi"><div class="label">TARGET</div><div class="medium green">${money(sig.target)}</div></div>
-        <div class="kpi"><div class="label">INVALIDATION</div><div class="medium red">${money(sig.stop)}</div></div>
-        <div class="kpi"><div class="label">REWARD / RISK</div><div class="medium">${sig.rr}×</div></div>
-        <div class="kpi"><div class="label">CONFIDENCE</div><div class="medium">${sig.confidence}%</div></div>
-      </div>
-      <hr>
-      <div class="row wrap small">
-        <span><span class="muted">Upside</span> <b class="green">+${sig.upside}%</b></span>
-        <span><span class="muted">Downside</span> <b class="red">${sig.downside}%</b></span>
-        <span><span class="muted">Horizon</span> <b>${esc(sig.horizon)}</b></span>
-      </div>
-      <div style="margin-top:12px"><div class="label">LOCKED THESIS</div><ul>${sig.thesis.map(t=>`<li>${esc(t)}</li>`).join("")}</ul></div>
-    </div>`;
-
-  document.getElementById("watchcards").innerHTML=d.watchlist.map(w=>`
-    <div class="card wait">
-      <div class="row"><div class="medium">${esc(w.instrument)}</div><span class="badge amber">${esc(w.action)}</span></div>
-      <div class="small muted" style="margin-top:8px">Day-1 ref ${esc(w.reference)}</div>
-      <div style="margin-top:10px"><div class="label">TRIGGER / WATCH ZONE</div><div class="medium">${esc(w.trigger)}</div></div>
-      <div class="small" style="margin-top:8px">${esc(w.note)}</div>
-    </div>`).join("");
-
-  document.getElementById("openRows").innerHTML=d.signals.filter(s=>s.status==="OPEN").map(s=>{
-    const pl=((s.current-s.entry)/s.entry)*100;
-    return `<tr><td>${esc(s.id)}</td><td><b>${esc(s.instrument)}</b></td><td>${money(s.entry)}</td><td>${money(s.current)}</td><td>${pct(pl)}</td><td>${money(s.target)}</td><td>${money(s.stop)}</td></tr>`;
-  }).join("") || `<tr><td colspan="7" class="empty">No open signals.</td></tr>`;
-
-  document.getElementById("historyList").innerHTML=d.history.map(h=>`<div class="timeline-item"><div class="label">${esc(h.date)}</div><div>${esc(h.text)}</div></div>`).join("");
-
-  document.getElementById("scoregrid").innerHTML=[
-    ["Active BUY",sc.active],["Wait Calls",sc.wait],["Closed",sc.closed],
-    ["Win Rate",sc.winRate===null?"N/A":sc.winRate+"%"],
-    ["Paper Return",pct(sc.paperReturn)],["Expectancy",sc.expectancy===null?"N/A":pct(sc.expectancy)],
-    ["Max Drawdown",sc.maxDrawdown===null?"N/A":pct(sc.maxDrawdown)],["Profit Factor",sc.profitFactor===null?"N/A":sc.profitFactor]
-  ].map(([a,b])=>`<div class="kpi"><div class="label">${a}</div><div class="medium">${b}</div></div>`).join("");
-
-  document.getElementById("audit").innerHTML=`
-    <div class="card">
-      <div class="row"><div class="medium">Locked Thesis · ${esc(sig.id)}</div><span class="badge">LOCKED</span></div>
-      <ul>${sig.thesis.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
-      <hr>
-      <div class="label">KEY RISKS</div><ul>${sig.risks.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
-    </div>
-    <div class="card">
-      <div class="medium">What are we learning?</div>
-      <div class="empty" style="margin-top:8px">${esc(d.learning.insufficient.join(" · "))}</div>
-    </div>`;
+ $('meta').textContent=`${market.meta.version||'Quant'} · Day ${market.meta.day||'?'} · ${market.meta.date||''}`;$('updated').textContent='Updated: '+(market.meta.updatedAt||'—');$('regime').textContent=market.regime.label||'—';$('risk').textContent=market.regime.risk||'—';$('takeaway').textContent=market.regime.takeaway||'';$('macrochips').innerHTML=(market.regime.chips||[]).map(x=>`<div class="kpi"><div class="label">${esc(x.label)}</div><div class="medium">${esc(x.value)}</div></div>`).join('');
+ let s=(market.signals||[]).find(x=>String(x.status).toUpperCase()==='OPEN')||(market.signals||[])[0];$('hero').innerHTML=s?`<div class="card signal"><div class="row wrap"><div><div class="label">ACTIVE PAPER SETUP</div><div class="big">${esc(s.instrument)} <span class="badge green">${esc(s.action||'')}</span></div></div><div><div class="label">PAPER ENTRY</div><div class="big">${money(s.entry)}</div></div></div><div class="kpi-grid" style="margin-top:12px"><div class="kpi"><div class="label">CURRENT</div><div class="medium">${money(s.current)}</div></div><div class="kpi"><div class="label">TARGET</div><div class="medium green">${money(s.target)}</div></div><div class="kpi"><div class="label">INVALIDATION</div><div class="medium red">${money(s.stop)}</div></div><div class="kpi"><div class="label">CONFIDENCE</div><div class="medium">${esc(s.confidence??'—')}%</div></div></div></div>`:'<div class="card empty">No active signal.</div>';
+ let ps=positions();$('portfolioSummary').innerHTML=`<div class="kpi-grid"><div class="kpi"><div class="label">POSITIONS</div><div class="medium">${ps.filter(p=>p.qty>0).length}</div></div><div class="kpi"><div class="label">TRANSACTIONS</div><div class="medium">${txs.length}</div></div><div class="kpi"><div class="label">UNREALIZED P/L</div><div class="medium">${ps.some(p=>p.unreal!==null)?money(ps.reduce((a,p)=>a+(p.unreal||0),0)):'—'}</div></div><div class="kpi"><div class="label">REALIZED P/L</div><div class="medium">${money(ps.reduce((a,p)=>a+p.realized,0))}</div></div></div>`;
+ $('positionList').innerHTML=ps.length?ps.map(p=>{let s=sigFor(p),lab=!s?'NOT YET AI-REVIEWED':(p.current!==null&&num(s.stop)!==null&&p.current<=Number(s.stop)?'REVIEW / EXIT ZONE':'HOLD / FOLLOW THESIS'),cls=!s?'muted':lab.startsWith('REVIEW')?'red':'green';return `<div class="card position"><div class="row wrap"><div><div class="big">${esc(p.instrument)}</div><div class="small muted">${p.qty.toLocaleString('id-ID')} shares · avg ${money(p.avg)}</div></div><span class="badge ${cls}">${lab}</span></div><div class="price-line"><div><div class="label">CURRENT</div><div class="value">${money(p.current)}</div></div><div><div class="label">UNREALIZED</div><div class="value ${p.unrealPct>=0?'green':'red'}">${p.unrealPct===null?'—':pct(p.unrealPct)}</div></div></div>${s?`<hr><div class="small">AI target <b>${money(s.target)}</b> · invalidation <b>${money(s.stop)}</b> · paper entry <b>${money(s.entry)}</b></div>`:''}<div class="actions" style="margin-top:10px"><button class="btn setprice" data-i="${esc(p.instrument)}">Set current price</button></div></div>`}).join(''):'<div class="card empty">Belum ada transaksi real. Tap + Transaction.</div>';
+ document.querySelectorAll('.setprice').forEach(b=>b.onclick=()=>{let x=prompt('Current price '+b.dataset.i,mprice(b.dataset.i)??'');if(x===null)return;let n=Number(x);if(!Number.isFinite(n)||n<=0)return alert('Harga tidak valid');manualPrices[b.dataset.i]=n;save();render()});
+ $('watchcards').innerHTML=(market.watchlist||[]).map(w=>`<div class="card wait"><div class="row"><div class="medium">${esc(w.instrument)}</div><span class="badge amber">WAIT</span></div><div class="small muted" style="margin-top:8px">Reference ${esc(w.reference||'—')}</div><div style="margin-top:10px"><div class="label">TRIGGER</div><div class="medium">${esc(w.trigger||'—')}</div></div></div>`).join('');
+ let sc=market.scorecard||{};$('scoregrid').innerHTML=[['Active',sc.active],['Wait',sc.wait],['Closed',sc.closed],['Win Rate',sc.winRate==null?'N/A':sc.winRate+'%'],['Paper Return',pct(sc.paperReturn)],['Expectancy',sc.expectancy==null?'N/A':pct(sc.expectancy)]].map(x=>`<div class="kpi"><div class="label">${x[0]}</div><div class="medium">${x[1]??'N/A'}</div></div>`).join('');
+ $('historyList').innerHTML=(market.history||[]).map(h=>`<div class="timeline-item"><div class="label">${esc(h.date)}</div><div>${esc(h.text)}</div></div>`).join('');$('txRows').innerHTML=[...txs].sort((a,b)=>b.date.localeCompare(a.date)).map(t=>`<tr><td>${esc(t.date)}</td><td><b>${esc(t.instrument)}</b></td><td>${esc(t.action)}</td><td>${money(t.price)}</td><td>${esc(t.quantity)} ${esc(t.unit)}</td><td>${esc(t.source)}</td><td>${esc(t.linkedSignal||'—')}</td></tr>`).join('')||'<tr><td colspan="7">No private transactions.</td></tr>';
 }
-
-function showTab(name){
-  document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("active",p.dataset.panel===name));
-  document.querySelectorAll("[data-nav]").forEach(b=>b.classList.toggle("active",b.dataset.nav===name));
-  window.scrollTo({top:0,behavior:"smooth"});
-}
-
-document.querySelectorAll("[data-nav]").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.nav)));
-
-document.getElementById("importFile").addEventListener("change",async e=>{
-  const f=e.target.files?.[0]; if(!f) return;
-  try{
-    const d=JSON.parse(await f.text());
-    state=d; saveData(d); render();
-    document.getElementById("settingsStatus").textContent="Imported and saved on this phone.";
-  }catch(err){
-    document.getElementById("settingsStatus").textContent="Invalid JSON file.";
-  }
-});
-
-document.getElementById("resetData").addEventListener("click",()=>{
-  localStorage.removeItem("quantData");
-  state=FALLBACK; render();
-  document.getElementById("settingsStatus").textContent="Reset to bundled Day-1 data.";
-});
-
-document.getElementById("syncBtn").addEventListener("click",async ()=>{
-  const url=document.getElementById("syncUrl").value.trim();
-  if(!url){ document.getElementById("settingsStatus").textContent="Paste a public JSON feed URL first."; return; }
-  try{
-    const r=await fetch(url,{cache:"no-store"});
-    if(!r.ok) throw new Error("HTTP "+r.status);
-    const d=await r.json();
-    state=d; saveData(d); localStorage.setItem("quantSyncUrl",url); render();
-    document.getElementById("settingsStatus").textContent="Synced successfully.";
-  }catch(err){
-    document.getElementById("settingsStatus").textContent="Sync failed. Feed must be public JSON with CORS allowed.";
-  }
-});
-
-(async()=>{
-  state=await loadData();
-  const u=localStorage.getItem("quantSyncUrl"); if(u) document.getElementById("syncUrl").value=u;
-  render();
-})();
+function show(n){document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.dataset.panel===n));document.querySelectorAll('[data-nav]').forEach(b=>b.classList.toggle('active',b.dataset.nav===n));window.scrollTo({top:0,behavior:'smooth'})}document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>show(b.dataset.nav));document.querySelectorAll('[data-more]').forEach(b=>b.onclick=()=>show(b.dataset.more));
+$('addTx').onclick=()=>{$('txModal').classList.add('open');$('txDate').value=new Date().toISOString().slice(0,10)};$('closeTx').onclick=()=>$('txModal').classList.remove('open');$('txForm').onsubmit=e=>{e.preventDefault();let t={id:'T-'+Date.now(),date:$('txDate').value,instrument:$('txInstrument').value.trim().toUpperCase(),action:$('txAction').value,price:Number($('txPrice').value),quantity:Number($('txQty').value),unit:$('txUnit').value,fee:Number($('txFee').value||0),source:$('txSource').value,linkedSignal:$('txLink').value.trim(),notes:$('txNotes').value.trim(),createdAt:new Date().toISOString()};if(!t.instrument||t.price<=0||t.quantity<=0)return alert('Input tidak valid');txs.push(t);save();$('txForm').reset();$('txModal').classList.remove('open');render();show('portfolio')};
+$('feedUrl').value=localStorage.getItem(KFEED)||'';$('saveFeed').onclick=async()=>{let u=$('feedUrl').value.trim();if(!u)return $('settingsStatus').textContent='Paste CSV feed URL dulu.';localStorage.setItem(KFEED,u);$('settingsStatus').textContent='Saved.';await sync()};$('syncNow').onclick=sync;$('exportTx').onclick=()=>{let blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),transactions:txs,manualPrices},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='AI_Quant_Private_Portfolio_Backup.json';a.click()};$('importTx').onchange=async e=>{let f=e.target.files?.[0];if(!f)return;try{let d=JSON.parse(await f.text());txs=d.transactions||[];manualPrices=d.manualPrices||{};save();render();$('settingsStatus').textContent='Imported.'}catch{$('settingsStatus').textContent='Invalid backup.'}};$('checkUpdate').onclick=async()=>{let r=await navigator.serviceWorker?.getRegistration();if(r){await r.update();$('settingsStatus').textContent='Update checked. Close and reopen app.'}};$('clearPrivate').onclick=()=>{if(confirm('Delete all private transactions on this phone?')){txs=[];manualPrices={};save();render()}};
+load();render();sync();

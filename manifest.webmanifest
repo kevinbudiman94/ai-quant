@@ -1,11 +1,12 @@
 {
-  "name": "AI Quant Paper Portfolio",
+  "name": "AI Quant Portfolio",
   "short_name": "AI Quant",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0b1020",
   "theme_color": "#0b1020",
-  "description": "Kevin's AI Quant paper-trading dashboard",
+  "description": "AI Quant paper research and private portfolio tracker",
   "icons": [
     {
       "src": "icon-192.png",

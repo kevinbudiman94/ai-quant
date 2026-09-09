@@ -3,7 +3,6 @@
     "version": "Quant v1.0",
     "day": 1,
     "date": "2026-09-09",
-    "paperOnly": true,
     "updatedAt": "2026-09-09 10:51 WIB"
   },
   "regime": {
@@ -31,10 +30,8 @@
       "instrument": "BBCA",
       "action": "BUY",
       "status": "OPEN",
-      "createdDate": "2026-09-09",
       "entry": 6550,
       "current": 6550,
-      "entryRange": "Rp6.500–6.575",
       "target": 7500,
       "stop": 6150,
       "horizon": "60 trading days",
@@ -47,15 +44,6 @@
         "Bank defensif berkualitas tinggi",
         "Fundamental 1H26 tetap solid",
         "Harga sudah terdiskon vs kualitas bisnis"
-      ],
-      "catalysts": [
-        "2H26 NIM/earnings improvement",
-        "Risk sentiment normalization"
-      ],
-      "risks": [
-        "NIM pressure",
-        "Credit-cost deterioration",
-        "Rupiah/global risk shock"
       ]
     }
   ],
@@ -66,8 +54,6 @@
       "action": "WAIT",
       "reference": "~Rp3.400",
       "trigger": "Rp3.250–3.320",
-      "target": "Rp3.700",
-      "stop": "Rp3.050",
       "note": "Jangan dikejar; tunggu risk/reward lebih baik."
     },
     {
@@ -76,8 +62,6 @@
       "action": "WAIT",
       "reference": "~US$4.355",
       "trigger": "US$4.100–4.200",
-      "target": "—",
-      "stop": "—",
       "note": "Existing gold exposure + yield/Fed risk."
     },
     {
@@ -86,38 +70,27 @@
       "action": "WAIT",
       "reference": "~17.577",
       "trigger": "≤17.400",
-      "target": "—",
-      "stop": "—",
       "note": "No chase; tunggu level akumulasi lebih baik."
     }
   ],
   "history": [
     {
       "date": "2026-09-09",
-      "type": "signal",
       "text": "Q1-001 BBCA activated @ Rp6.550"
     },
     {
       "date": "2026-09-09",
-      "type": "watch",
       "text": "BBRI, Gold, USD/IDR wait calls created"
     }
   ],
   "scorecard": {
+    "active": 1,
+    "wait": 3,
     "closed": 0,
     "winRate": null,
+    "paperReturn": 0,
     "expectancy": null,
-    "paperReturn": 0.0,
     "maxDrawdown": null,
-    "profitFactor": null,
-    "active": 1,
-    "wait": 3
-  },
-  "learning": {
-    "works": [],
-    "weak": [],
-    "insufficient": [
-      "All categories — inception day"
-    ]
+    "profitFactor": null
   }
 }
