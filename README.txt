@@ -25,3 +25,10 @@ Deployment:
 5. Close and reopen app if needed.
 
 Private sync backend remains SEPARATE and must NOT be uploaded to GitHub.
+
+
+v0.3.2 patch:
+- Fix blank Private Positions Current_Price being coerced to 0.
+- Falls back to public App Feed current price when cloud private current price is blank.
+- Expected BBCA dummy after sync: current Rp6,525; unrealized about -Rp5,000 / -0.76%.
+- No Apps Script/Code.gs change required if backend v0.3.2 is already deployed.
