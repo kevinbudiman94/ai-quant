@@ -1,12 +1,12 @@
 {
-  "name": "AI Quant Portfolio",
+  "name": "AI Quant Portfolio v0.3",
   "short_name": "AI Quant",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#0b1020",
   "theme_color": "#0b1020",
-  "description": "AI Quant paper research and private portfolio tracker",
+  "description": "AI Quant paper research with private portfolio sync",
   "icons": [
     {
       "src": "icon-192.png",
