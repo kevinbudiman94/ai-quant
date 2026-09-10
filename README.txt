@@ -1,34 +1,17 @@
-AI Quant PWA v0.3.1 — GitHub Pages package
+AI Quant PWA v0.4 — Free Price Layer
 
-UPLOAD ONLY THESE FILES TO THE PUBLIC GITHUB REPO.
-No private token or private holdings are embedded in this package.
+New:
+- Free delayed price layer from GOOGLEFINANCE via the private Google Sheet backend.
+- Refresh Prices button on Today/Portfolio.
+- Auto-refresh every 5 minutes while app is visible.
+- Paper current price/P&L/RR uses delayed quote when available; locked paper entry/target/stop never changes.
+- Watchlist shows delayed current price and mechanically flags trigger zones.
+- Actual portfolio P/L uses delayed current quote.
+- Gold remains daily-only because GOOGLEFINANCE does not provide a reliable free spot-XAU feed for this design.
 
-What's new vs v0.3:
-- Dedicated Copy token button with clipboard fallback.
-- Show QR: QR is generated locally in-browser; token is not sent to any QR service.
-- Download token.txt for safe transfer to desktop via USB / Quick Share / Bluetooth.
-- Reminder to delete token.txt after setup.
-- Existing v0.3 data/settings persist because storage keys are unchanged.
-
-Existing v0.3 features retained:
-- Locked Paper Signal vs Today's Opportunity.
-- Paper P/L, entry zone and current reward/risk.
-- Actual portfolio action separate from paper scorecard.
-- Edit/Delete Transaction.
-- Optional token-protected private sync through Google Apps Script.
-
-Deployment:
-1. Extract this ZIP.
-2. Upload/replace ALL files in the existing GitHub repo root.
-3. Commit changes and wait for GitHub Pages deployment.
-4. Open installed AI Quant app → More → Settings → Check app update.
-5. Close and reopen app if needed.
-
-Private sync backend remains SEPARATE and must NOT be uploaded to GitHub.
-
-
-v0.3.2 patch:
-- Fix blank Private Positions Current_Price being coerced to 0.
-- Falls back to public App Feed current price when cloud private current price is blank.
-- Expected BBCA dummy after sync: current Rp6,525; unrealized about -Rp5,000 / -0.76%.
-- No Apps Script/Code.gs change required if backend v0.3.2 is already deployed.
+IMPORTANT:
+- Replace existing GitHub repo root files with this package.
+- ALSO update Apps Script Code.gs to AI_Quant_Private_Sync_Backend_v0.4.gs and redeploy as a New version.
+- Keep the same AI_QUANT_TOKEN and same /exec URL.
+- Quotes can be delayed up to ~20 minutes and are not tick-by-tick real-time.
+- Manual price remains only as a fallback.
