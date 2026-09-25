@@ -1,1 +1,54 @@
-const CACHE='ai-quant-v04-20260910';const ASSETS=['./','./index.html','./styles.css','./app.js','./qrlocal.js','./data.json','./manifest.webmanifest','./icon-192.png','./icon-512.png'];self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)))});self.addEventListener('activate',e=>e.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k))))])));self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).then(r=>{let c=r.clone();caches.open(CACHE).then(x=>x.put(e.request,c));return r}).catch(()=>caches.match(e.request)))})
+const CACHE = "ai-quant-v05-20260924-dates1";
+const ASSETS = [
+  "./",
+  "./index.html",
+  "./styles.css",
+  "./core.js",
+  "./app.js",
+  "./seed.js",
+  "./qrlocal.js",
+  "./data.json",
+  "./manifest.webmanifest",
+  "./icon-192.png",
+  "./icon-512.png",
+];
+self.addEventListener("install", (event) => {
+  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)));
+});
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") self.skipWaiting();
+});
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    Promise.all([
+      self.clients.claim(),
+      caches
+        .keys()
+        .then((keys) =>
+          Promise.all(
+            keys
+              .filter((k) => k.startsWith("ai-quant-") && k !== CACHE)
+              .map((k) => caches.delete(k)),
+          ),
+        ),
+    ]),
+  );
+});
+self.addEventListener("fetch", (event) => {
+  if (event.request.method !== "GET") return;
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin || url.search) return;
+  const base = new URL("./", self.location.href),
+    known = ASSETS.some(
+      (path) => new URL(path, base).pathname === url.pathname,
+    );
+  if (!known) return;
+  event.respondWith(
+    caches
+      .open(CACHE)
+      .then(
+        async (cache) =>
+          (await cache.match(event.request)) || fetch(event.request),
+      ),
+  );
+});

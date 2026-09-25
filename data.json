@@ -1,9 +1,226 @@
 {
-  "meta":{"version":"Quant v1.0","day":2,"date":"2026-09-10","updatedAt":"2026-09-10 09:47 WIB"},
-  "regime":{"label":"Risk-off / inflation shock","risk":"High","takeaway":"NO ACTION today: preserve optionality and keep existing BBCA paper signal unchanged.","chips":[{"label":"Brent","value":"~US$101.34"},{"label":"US 10Y","value":"~4.85%"},{"label":"Fed hike odds","value":"~60%"}]},
-  "signals":[{"id":"Q1-001","instrument":"BBCA","action":"BUY","status":"OPEN","entry":6550,"entryLow":6500,"entryHigh":6575,"current":6525,"target":7500,"stop":6150,"confidence":68}],
-  "decisions":{"Q1-001":{"label":"BUY ZONE — thesis intact","currentRR":2.6,"reason":"Current Rp6.525 remains inside the original locked entry zone Rp6.500–6.575."}},
-  "watchlist":[{"id":"W1-001","instrument":"BBRI","action":"WAIT","reference":"Rp3.420","trigger":"Rp3.250–3.320"},{"id":"W1-002","instrument":"Gold (XAU/USD)","action":"WAIT","reference":"~US$4,392","trigger":"US$4.100–4.200"},{"id":"W1-003","instrument":"USD/IDR","action":"WAIT","reference":"JISDOR 17.552","trigger":"≤17.400"}],
-  "history":[{"date":"2026-09-09","text":"Q1-001 BBCA activated @ Rp6.550"}],
-  "scorecard":{"active":1,"wait":3,"closed":0,"winRate":null,"paperReturn":-0.3817,"expectancy":null,"maxDrawdown":null,"profitFactor":null}
+  "capturedAt": "2026-09-24",
+  "market": {
+    "meta": {
+      "version": "Quant v1.0",
+      "asOf": "2026-09-24",
+      "day": 16,
+      "updatedAt": "2026-09-24 09:46 WIB",
+      "date": "2026-09-24"
+    },
+    "regime": {
+      "chips": [
+        {
+          "label": "Brent",
+          "value": "~US$101.34",
+          "asOf": "2026-09-10"
+        },
+        {
+          "label": "US 10Y",
+          "value": "~4.85%",
+          "asOf": "2026-09-10"
+        }
+      ],
+      "label": "High risk / local relief, global oil-yield headwind returns",
+      "_dates": {
+        "label": "2026-09-24",
+        "risk": "2026-09-24",
+        "takeaway": "2026-09-24",
+        "brent": "2026-09-10",
+        "us10y": "2026-09-10"
+      },
+      "risk": "High",
+      "takeaway": "NO ACTION: BI held 5.75%, IHSG and BBCA rebounded and JISDOR improved, but overnight US 10Y jumped to ~5.11% and Brent rebounded above US$103. Local relief is not yet enough to justify fresh risk.",
+      "brent": "~US$101.34",
+      "us10y": "~4.85%"
+    },
+    "signals": [
+      {
+        "id": "Q1-001",
+        "_dates": {
+          "instrument": "2026-09-09",
+          "action": "2026-09-09",
+          "status": "2026-09-24",
+          "entry": "2026-09-24",
+          "current": "2026-09-24",
+          "target": "2026-09-24",
+          "stop": "2026-09-24",
+          "confidence": "2026-09-24",
+          "entryLow": "2026-09-24",
+          "entryHigh": "2026-09-24"
+        },
+        "instrument": "BBCA",
+        "action": "BUY",
+        "status": "OPEN",
+        "entry": 6550,
+        "current": 6300,
+        "target": 7500,
+        "stop": 6150,
+        "confidence": 68,
+        "entryLow": 6500,
+        "entryHigh": 6575
+      }
+    ],
+    "watchlist": [
+      {
+        "id": "W1-001",
+        "_dates": {
+          "summary": "2026-09-24"
+        },
+        "instrument": "BBRI",
+        "action": "WAIT",
+        "reference": "~Rp3.190 close",
+        "trigger": "Rp3.250–3.320",
+        "targetText": "Rp3.700",
+        "stopText": "Rp3.050",
+        "note": "Still below locked trigger zone; rejected trigger currently favorable, but stop not reached and tracking continues."
+      },
+      {
+        "id": "W1-002",
+        "_dates": {
+          "summary": "2026-09-24"
+        },
+        "instrument": "Gold (XAU/USD)",
+        "action": "WAIT",
+        "reference": "~US$4,329-4,340 Sep23",
+        "trigger": "US$4.100–4.200",
+        "targetText": "—",
+        "stopText": "—",
+        "note": "Closer to zone but still above it; existing gold exposure argues against chasing."
+      },
+      {
+        "id": "W1-003",
+        "_dates": {
+          "summary": "2026-09-24"
+        },
+        "instrument": "USD/IDR",
+        "action": "WAIT",
+        "reference": "JISDOR 17.803",
+        "trigger": "≤17.400",
+        "targetText": "—",
+        "stopText": "—",
+        "note": "Improved from 17.883 but still far above trigger; no chase."
+      }
+    ],
+    "decisions": {
+      "Q1-001": {
+        "label": "REVIEW — RECOVERY, DO NOT ADD",
+        "asOf": "2026-09-24",
+        "currentRR": 8,
+        "reason": "BBCA rebounded to Rp6,300 after BI held 5.75%; stop remains unhit and thesis intact. But price is still below locked entry zone and overnight US yields/oil re-worsened, so do not average down."
+      }
+    },
+    "history": [],
+    "scorecard": {
+      "active": 1,
+      "asOf": "2026-09-24",
+      "wait": 3,
+      "closed": 0,
+      "paperReturn": -3.8168
+    },
+    "diagnostics": []
+  },
+  "legacy": {
+    "signals": [
+      {
+        "id": "Q1-001",
+        "version": "Quant v1.0",
+        "createdDate": "2026-09-09",
+        "createdTime": "10:51 WIB",
+        "instrument": "BBCA",
+        "assetClass": "Indonesia Equity",
+        "action": "BUY",
+        "status": "OPEN",
+        "entry": 6550,
+        "entryLow": 6500,
+        "entryHigh": 6575,
+        "target": 7500,
+        "stop": 6150,
+        "horizon": 60,
+        "confidence": 68,
+        "benchmark": "IHSG",
+        "benchmarkBaseline": 6694,
+        "thesis": "High-quality defensive Indonesian bank; strong CASA and manageable asset quality; resilient 1H26 earnings; expected 2H26 NIM improvement; price derating appears larger than deterioration in business quality.",
+        "catalysts": "2H26 NIM/earnings improvement; normalization of risk sentiment; demand for liquid large-cap banks.",
+        "risks": "Prolonged NIM pressure; weaker loan growth; higher credit costs; rupiah/global risk shock; broad market drawdown.",
+        "locked": true,
+        "exitDate": "",
+        "exitPrice": null,
+        "fairLow": null,
+        "fairBase": null,
+        "fairHigh": null,
+        "targetDerivation": null,
+        "invalidationDerivation": null,
+        "sourceRefs": null
+      }
+    ],
+    "watchlist": [
+      {
+        "id": "W1-001",
+        "createdDate": "2026-09-09",
+        "instrument": "BBRI",
+        "assetClass": "Indonesia Equity",
+        "action": "WAIT",
+        "status": "TRIGGER_REACHED_REVIEW",
+        "reference": "~Rp3.400",
+        "triggerLow": 3250,
+        "triggerHigh": 3320,
+        "trigger": "Rp3.250–3.320",
+        "target": 3700,
+        "stop": 3050,
+        "horizon": 60,
+        "thesis": "Improving 1H26 earnings/micro recovery and cheap PBV, but recent rebound plus funding/asset-quality risks make current risk/reward less attractive than BBCA.",
+        "locked": true,
+        "lastReview": "",
+        "exitDate": "",
+        "exitReason": null,
+        "version": null,
+        "sourceRefs": null
+      },
+      {
+        "id": "W1-002",
+        "createdDate": "2026-09-09",
+        "instrument": "Gold (XAU/USD)",
+        "assetClass": "Gold",
+        "action": "WAIT",
+        "status": "ACTIVE",
+        "reference": "~US$4.355",
+        "triggerLow": 4100,
+        "triggerHigh": 4200,
+        "trigger": "US$4.100–4.200",
+        "target": null,
+        "stop": null,
+        "horizon": null,
+        "thesis": "Strong long-run structural case, but near-term hawkish-Fed/yield risk; existing physical-gold exposure already meaningful.",
+        "locked": true,
+        "lastReview": "",
+        "exitDate": "",
+        "exitReason": null,
+        "version": null,
+        "sourceRefs": null
+      },
+      {
+        "id": "W1-003",
+        "createdDate": "2026-09-09",
+        "instrument": "USD/IDR",
+        "assetClass": "FX",
+        "action": "WAIT",
+        "status": "ACTIVE",
+        "reference": "~17.577",
+        "triggerLow": null,
+        "triggerHigh": 17400,
+        "trigger": "≤17.400",
+        "target": null,
+        "stop": null,
+        "horizon": null,
+        "thesis": "Do not chase USD at elevated absolute level; gradual accumulation watch at 17,400 or lower.",
+        "locked": true,
+        "lastReview": "",
+        "exitDate": "",
+        "exitReason": null,
+        "version": null,
+        "sourceRefs": null
+      }
+    ]
+  }
 }
