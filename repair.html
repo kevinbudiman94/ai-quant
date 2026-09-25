@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>AI Quant Cache Repair</title>
+<style>
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0;background:#0f1f19;color:#f5f7f4;display:grid;place-items:center;min-height:100vh;padding:24px}
+.card{max-width:680px;width:100%;background:#173126;border:1px solid #315345;border-radius:20px;padding:24px;box-sizing:border-box}
+h1{margin:0 0 12px;font-size:28px}
+p{line-height:1.5;color:#d3ded8}
+button{appearance:none;border:0;border-radius:12px;padding:14px 18px;font-size:16px;font-weight:700;background:#d9f48c;color:#132019;cursor:pointer}
+button:disabled{opacity:.55;cursor:wait}
+pre{white-space:pre-wrap;background:#10231b;border-radius:12px;padding:14px;color:#cbe6d7;min-height:72px}
+.small{font-size:13px;color:#9fb4aa}
+</style>
+</head>
+<body>
+<main class="card">
+<h1>AI Quant app cache repair</h1>
+<p>This removes only registered service workers and AI Quant Cache Storage entries for this site. It does <strong>not</strong> clear localStorage, so app settings, the private-sync URL, and the local private token are preserved.</p>
+<button id="repair">Repair &amp; reload AI Quant</button>
+<pre id="log">Ready.</pre>
+<p class="small">After the app opens, confirm the version shows v0.5.</p>
+</main>
+<script>
+const btn=document.getElementById('repair');
+const log=document.getElementById('log');
+const write=(m)=>{log.textContent+="\n"+m;};
+btn.addEventListener('click',async()=>{
+  btn.disabled=true;
+  log.textContent="Starting repair…";
+  try{
+    if('serviceWorker' in navigator){
+      const regs=await navigator.serviceWorker.getRegistrations();
+      write(`Found ${regs.length} service worker registration(s).`);
+      const results=await Promise.all(regs.map(r=>r.unregister()));
+      write(`Unregistered ${results.filter(Boolean).length}/${results.length}.`);
+    }else{
+      write("Service workers are not supported in this browser.");
+    }
+    if('caches' in window){
+      const keys=await caches.keys();
+      const targets=keys.filter(k=>/^ai-quant-/i.test(k));
+      write(`Found ${targets.length} AI Quant cache(s).`);
+      await Promise.all(targets.map(k=>caches.delete(k)));
+      write("AI Quant Cache Storage cleared.");
+    }
+    write("Private/local app storage preserved.");
+    write("Reloading fresh app…");
+    const base=new URL('./index.html',location.href);
+    base.searchParams.set('repair',Date.now().toString());
+    location.replace(base.toString());
+  }catch(err){
+    write("ERROR: "+(err&&err.message?err.message:String(err)));
+    btn.disabled=false;
+  }
+});
+</script>
+</body>
+</html>
