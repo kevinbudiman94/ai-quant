@@ -340,6 +340,7 @@
     const allowed = [
       "today",
       "radar",
+      "swing",
       "signals",
       "dates",
       "portfolio",
@@ -362,6 +363,7 @@
     const labels = {
       today: "Today",
       radar: "Radar",
+      swing: "Swing Candidates",
       signals: "Signals & watch",
       dates: "Crucial dates",
       portfolio: "My portfolio",
@@ -384,6 +386,7 @@
     const pages = {
       today: todayPage,
       radar: radarPage,
+      swing: swingPage,
       signals: signalsPage,
       dates: datesPage,
       portfolio: portfolioPage,
@@ -735,6 +738,35 @@
       '<p class="hint">“Improving” and “Deteriorating” compare recorded research scores with the previous available screen. No statistical win probability is implied.</p>'
     );
   }
+  function swingPage() {
+    const m = M();
+    const candidates = Array.isArray(m.swingCandidates) ? m.swingCandidates : [];
+    const scope = m.swingMeta || {};
+    const description = "Additional opportunities beyond IDX30 · provisional research only. " +
+      "Intended equity holding horizon: 5–20 IDX sessions. No entry, target, stop or R/R is approved.";
+    const intro = head("QUANT v1.1 · SHORT-TERM RESEARCH", "Swing Candidates", description,
+      '<button class="btn" data-action="publicSync">↻ Refresh</button>');
+    const warning = notice("No candidate is currently signal-eligible. Quotes, if any, are indicative; fundamental and liquidity screening must be verified before a paper BUY. This page does not place orders.", "neutral");
+    if (!candidates.length) return intro + warning + empty("Candidate feed not loaded",
+      "The published public feed may not yet include swing_candidate_v01 records, or the feed has not been refreshed.");
+    return intro + warning +
+      '<div class="metrics" style="margin-top:0">' +
+      metric("Candidates", candidates.length, "Extended universe; not IDX30") +
+      metric("BUY SETUP", "0", "Awaiting source, liquidity and momentum gates") +
+      metric("Horizon", esc(scope.horizon || "5–20 IDX sessions"), "Paper research, not a holding guarantee") + '</div>' +
+      '<div class="grid-2">' + candidates.map(c =>
+        '<article class="card"><div class="row"><div><div class="ticker-title">' +
+        esc(c.ticker || c.id) + '</div><div class="tiny">' + esc(c.company || "Unverified company") +
+        '</div></div>' + pill("NO ACTION") + '</div>' +
+        '<div class="chipline">' + pill(c.researchStatus || "RESEARCH PENDING", "amber") +
+        pill(c.scope || "EXTENDED NON-IDX30") + '</div>' +
+        '<p class="sub spacer">' + esc(c.reason || "Research gate remains open.") + '</p>' +
+        '<div class="mini-stats"><div><div class="label">Liquidity gate</div><div class="sub">' +
+        esc(c.liquidityGate || "NOT VERIFIED") + '</div></div><div><div class="label">Price / entry</div>' +
+        '<div class="sub">Unverified / no setup</div></div></div>' +
+        '<p class="hint">Published candidate metadata only. No claimed fundamental grade, fair value or technical BUY signal.</p></article>'
+      ).join("") + '</div>';
+  }
   function portfolioPage() {
     const ps = Q.positions(txs, price),
       open = ps.items.filter((p) => p.qty > 0),
@@ -1059,6 +1091,11 @@
           "risk",
           "Risk lab",
           "Size a hypothetical position and stress the downside",
+        ],
+        [
+          "swing",
+          "Swing Candidates",
+          "Extra-INDEX candidates for 5–20-session trading research",
         ],
         [
           "journal",
