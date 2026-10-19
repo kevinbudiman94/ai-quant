@@ -24,6 +24,8 @@
     signals: [],
     watchlist: [],
     decisions: {},
+    swingCandidates: [],
+    swingMeta: {},
     history: [],
     scorecard: {},
     diagnostics: [],
@@ -101,6 +103,7 @@
     }
     const sig = {},
       watch = {},
+      swing = {},
       history = {};
     for (const o of latest.values()) {
       const { type, id, field, date, value } = o;
@@ -132,6 +135,12 @@
       } else if (type === "decision") {
         (d.decisions[id] || (d.decisions[id] = {}))[field] = value;
         d.decisions[id].asOf = date;
+      } else if (type === "swing_candidate_v01") {
+        const c = swing[id] || (swing[id] = { id, _dates: {} });
+        c[field] = value;
+        c._dates[field] = date;
+      } else if (type === "swing_meta_v01") {
+        d.swingMeta[field] = value;
       } else if (type === "score") {
         d.scorecard[field] = value;
         d.scorecard.asOf = date;
@@ -140,6 +149,9 @@
     }
     d.signals = Object.values(sig);
     d.watchlist = Object.values(watch);
+    d.swingCandidates = Object.values(swing).sort((a, b) =>
+      String(a.ticker || a.id).localeCompare(String(b.ticker || b.id)),
+    );
     d.history = Object.values(history);
     d.regime.chips = Object.entries({
       brent: "Brent",
