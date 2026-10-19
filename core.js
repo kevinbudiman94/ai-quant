@@ -1,4 +1,4 @@
-/* AI Quant v0.5 · pure data / calculation layer; no credentials or network access. */
+/* AI Quant v0.6 · pure data / calculation layer; no credentials or network access. */
 (function (root, factory) {
   const api = factory();
   if (typeof module === "object" && module.exports) module.exports = api;
