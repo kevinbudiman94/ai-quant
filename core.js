@@ -77,6 +77,7 @@
       d = blank(),
       seen = new Set();
     let duplicates = 0;
+    let latestPublicDate = "", latestEquityDate = "", latestSwingDate = "", latestCrossAssetDate = "";
     for (const r of rows) {
       let type = r[at.record_type],
         id = r[at.record_id],
@@ -85,6 +86,12 @@
         v = r[at.value],
         k = [type, id, field].join("|");
       if (!id || !field) continue;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        if (date > latestPublicDate) latestPublicDate = date;
+        if (type === "decision_v06" && date > latestEquityDate) latestEquityDate = date;
+        if (type === "swing_candidate_v01" && date > latestSwingDate) latestSwingDate = date;
+        if (type === "cross_asset_v06" && date > latestCrossAssetDate) latestCrossAssetDate = date;
+      }
       if (seen.has(k + "|" + date)) duplicates++;
       seen.add(k + "|" + date);
       if (!latest.has(k) || latest.get(k).date <= date)
@@ -101,6 +108,10 @@
                 : v,
         });
     }
+    d.meta.latestPublicAsOf = latestPublicDate;
+    d.meta.latestEquityAsOf = latestEquityDate;
+    d.meta.latestSwingAsOf = latestSwingDate;
+    d.meta.latestCrossAssetAsOf = latestCrossAssetDate;
     const sig = {},
       watch = {},
       swing = {},
