@@ -1,4 +1,4 @@
-const CACHE = "ai-quant-v06-20261019-swing1";
+const CACHE = "ai-quant-v06-20261019-swing2";
 const ASSETS = [
   "./",
   "./index.html",
