@@ -330,11 +330,16 @@
     toastTimer = setTimeout(() => ($("toast").hidden = true), 5000);
   }
   function updateBar() {
-    const asOf = market.meta?.date || market.meta?.asOf || S.capturedAt;
-    const stale = Q.calendarAge(asOf) > 1;
+    const coreAsOf = market.meta?.date || market.meta?.asOf || S.capturedAt;
+    const recentAsOf = market.meta?.latestPublicAsOf || coreAsOf;
+    const stale = Q.calendarAge(recentAsOf) > 1;
+    const parts = [];
+    if (market.meta?.latestEquityAsOf) parts.push("Equity " + date(market.meta.latestEquityAsOf, true));
+    if (market.meta?.latestSwingAsOf) parts.push("Swing " + date(market.meta.latestSwingAsOf, true));
+    const summary = parts.length ? parts.join(" · ") + " · Core meta " + date(coreAsOf, true) : date(coreAsOf);
     const qChecked = checked ? timestamp(checked) : "not connected";
     $("connectionBar").innerHTML =
-      `<span><i class="status-dot ${stale ? "amber" : ""}"></i>${esc(syncStatus)} · ${date(asOf)}${stale ? " · " + dataAge(asOf) : ""}</span><span>${priceError ? '<i class="status-dot amber"></i>' + esc(priceError) : "Prices checked " + qChecked}</span>`;
+      `<span><i class="status-dot ${stale ? "amber" : ""}"></i>${esc(syncStatus)} · ${summary}${stale ? " · " + dataAge(recentAsOf) : ""}</span><span>${priceError ? '<i class="status-dot amber"></i>' + esc(priceError) : "Prices checked " + qChecked}</span>`;
   }
   function setView(next, replace = false) {
     const allowed = [
@@ -740,32 +745,51 @@
   }
   function swingPage() {
     const m = M();
-    const candidates = Array.isArray(m.swingCandidates) ? m.swingCandidates : [];
+    const candidates = Array.isArray(m.swingCandidates)
+      ? [...m.swingCandidates].sort((a, b) =>
+          (a.id === "ADES" ? -1 : b.id === "ADES" ? 1 : String(a.id).localeCompare(String(b.id))))
+      : [];
     const scope = m.swingMeta || {};
-    const description = "Additional opportunities beyond IDX30 · provisional research only. " +
-      "Intended equity holding horizon: 5–20 IDX sessions. No entry, target, stop or R/R is approved.";
-    const intro = head("QUANT v1.1 · SHORT-TERM RESEARCH", "Swing Candidates", description,
-      '<button class="btn" data-action="publicSync">↻ Refresh</button>');
-    const warning = notice("No candidate is currently signal-eligible. Quotes, if any, are indicative; fundamental and liquidity screening must be verified before a paper BUY. This page does not place orders.", "neutral");
+    const description = "Beyond IDX30 · swing research for 5–20 IDX sessions. These are not BUY recommendations.";
+    const intro = head("QUANT v1.1 · SHORT-HORIZON RESEARCH", "Swing Candidates", description,
+      '<button class="btn" data-action="publicSync">↻ Refresh feed</button>');
+    const warning = notice("NO BUY SETUP: evidence from the latest completed EOD session is preliminary. ADTV is a close×volume proxy, NOT actual value traded, and order-book depth is unverified. No entry/target/stop is active.", "neutral");
     if (!candidates.length) return intro + warning + empty("Candidate feed not loaded",
-      "The published public feed may not yet include swing_candidate_v01 records, or the feed has not been refreshed.");
+      "Refresh the published public feed; no research eligibility can be inferred from a blank view.");
     return intro + warning +
       '<div class="metrics" style="margin-top:0">' +
-      metric("Candidates", candidates.length, "Extended universe; not IDX30") +
-      metric("BUY SETUP", "0", "Awaiting source, liquidity and momentum gates") +
-      metric("Horizon", esc(scope.horizon || "5–20 IDX sessions"), "Paper research, not a holding guarantee") + '</div>' +
-      '<div class="grid-2">' + candidates.map(c =>
-        '<article class="card"><div class="row"><div><div class="ticker-title">' +
-        esc(c.ticker || c.id) + '</div><div class="tiny">' + esc(c.company || "Unverified company") +
-        '</div></div>' + pill("NO ACTION") + '</div>' +
-        '<div class="chipline">' + pill(c.researchStatus || "RESEARCH PENDING", "amber") +
-        pill(c.scope || "EXTENDED NON-IDX30") + '</div>' +
-        '<p class="sub spacer">' + esc(c.reason || "Research gate remains open.") + '</p>' +
-        '<div class="mini-stats"><div><div class="label">Liquidity gate</div><div class="sub">' +
-        esc(c.liquidityGate || "NOT VERIFIED") + '</div></div><div><div class="label">Price / entry</div>' +
-        '<div class="sub">Unverified / no setup</div></div></div>' +
-        '<p class="hint">Published candidate metadata only. No claimed fundamental grade, fair value or technical BUY signal.</p></article>'
-      ).join("") + '</div>';
+      metric("Candidates", candidates.length, "Extended, outside IDX30") +
+      metric("BUY SETUP", "0", "Source, liquidity, regime and timing gates") +
+      metric("Technical EOD", date(scope.technicalEod || ""), "Do not confuse with live quotes") +
+      metric("Horizon", esc(scope.horizon || "5–20 IDX sessions"), "Intended holding period, not guarantee") + '</div>' +
+      '<div class="grid-2">' + candidates.map(c => {
+        const p = Q.n(c.eodClose), ma = Q.n(c.ma20), rsi = Q.n(c.rsi14),
+          rs = Q.n(c.rs20Pp), liquidity = Q.n(c.adtvProxyBn),
+          source = Q.validSourceURL(c.sourcePrimary);
+        const sourceLink = source
+          ? '<a href="' + esc(source) + '" target="_blank" rel="noopener noreferrer">Issuer/source page ↗</a>'
+          : '';
+        return '<article class="card"><div class="row"><div><div class="ticker-title">' +
+          esc(c.ticker || c.id) + '</div><div class="tiny">' + esc(c.company || "Research candidate") +
+          '</div></div>' + pill("NO ACTION") + '</div>' +
+          '<div class="chipline">' + pill(c.researchStatus || "SCREENING QUEUE", "amber") +
+          pill(c.technicalGrade || "TECHNICAL NOT VERIFIED",
+            c.technicalGrade === "WEAK" ? "red" : "amber") + '</div>' +
+          cells([
+            ["EOD close · " + (c.eodDate ? date(c.eodDate, true) : "date missing"),
+              p === null ? "—" : money(p), ma === null ? "MA20 not available" : "MA20 " + money(ma)],
+            ["Wilder RSI14", rsi === null ? "—" : num(rsi), "EOD historical only"],
+            ["RS20 vs IHSG", rs === null ? "—" : percent(rs), "Can look positive because IHSG fell sharply"],
+            ["ADTV20 proxy", liquidity === null ? "—" : "Rp" + num(liquidity) + "bn/day",
+              "Close×volume, not audited trading value"]
+          ]) +
+          '<p class="sub spacer"><b>Fundamental:</b> ' + esc(c.fundamentalSummary || c.fundamentalStage || "Not yet audited") + '</p>' +
+          '<p class="sub"><b>Liquidity:</b> ' + esc(c.liquidityGateDetail || c.liquidityGate || "Not yet audited") + '</p>' +
+          '<p class="hint"><b>Remaining checks:</b> ' + esc(c.riskSummary || "Primary issuer evidence, actual trading turnover and order depth") +
+          (sourceLink ? ' · ' + sourceLink : '') +
+          '</p></article>';
+      }).join("") + '</div>' +
+      '<p class="hint">Data dates vary: fundamentals are H1 2026 or unverified, technicals are full-session EOD, and intraday prices require a separate source. No paper trade has been opened.</p>';
   }
   function portfolioPage() {
     const ps = Q.positions(txs, price),
